@@ -1,0 +1,456 @@
+/* ── Reset & Base ── */
+/* Removes default browser spacing from everything */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Design Tokens (your color palette & fonts) ── */
+/* Change these variables to retheme the whole site instantly */
+:root {
+  --cream:    #faf6f0;   /* page background */
+  --warm:     #f0e8d8;   /* card borders, unit backgrounds */
+  --gold:     #c9a84c;   /* accent color — dates, dividers */
+  --gold-lt:  #e8d08a;
+  --ink:      #1a1410;   /* main text */
+  --muted:    #7a6a58;   /* secondary text */
+  --green:    #2d5a3d;
+  --green-lt: #4a8a5e;   /* Costa Rica dot color */
+  --ocean:    #1b4f6b;
+  --ocean-lt: #2e7da8;
+  --sand:     #e8d5b0;
+  --font-display: 'Playfair Display', Georgia, serif;  /* headings */
+  --font-body:    'DM Sans', sans-serif;               /* everything else */
+  --radius: 20px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden; /* prevents horizontal scroll on mobile */
+}
+
+/* ── Subtle paper texture over the whole page ── */
+/* Uses an inline SVG as a background-image to create a noise/grain effect */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,..."); /* SVG noise filter */
+  pointer-events: none;  /* clicks pass through it */
+  z-index: 0;
+  opacity: 0.5;
+}
+
+/* ── HERO SECTION ── */
+.hero {
+  position: relative;
+  text-align: center;
+  padding: 80px 20px 60px;
+  z-index: 1; /* sits above the body::before texture */
+}
+
+/* Small uppercase label above the title */
+.hero-eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.25em;    /* wide spacing = elegant label feel */
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 20px;
+  opacity: 0;
+  animation: fadeUp 0.8s ease forwards 0.1s; /* fades in 0.1s after load */
+}
+
+/* Main title — clamp() makes font-size fluid between 2.8rem and 5.5rem */
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 7vw, 5.5rem);
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--ink);
+  margin-bottom: 16px;
+  opacity: 0;
+  animation: fadeUp 0.9s ease forwards 0.25s;
+}
+
+/* The italic "Chapter" word inside the title */
+.hero-title em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+.hero-sub {
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+  opacity: 0;
+  animation: fadeUp 0.9s ease forwards 0.4s;
+}
+
+/* ── Gold divider line with a center icon ── */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 340px;
+  margin: 36px auto;
+  opacity: 0;
+  animation: fadeUp 0.9s ease forwards 0.5s;
+}
+/* The lines on either side of the ✦ icon */
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold));
+}
+.divider::after {
+  background: linear-gradient(to left, transparent, var(--gold));
+}
+
+/* ── CARDS GRID ── */
+.cards {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  /* auto-fit: fills as many columns as fit; min 320px each */
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 28px;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+/* ── INDIVIDUAL CARD ── */
+.card {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  /* Springy pop animation on hover using cubic-bezier */
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.4s ease;
+  opacity: 0;
+  animation: fadeUp 0.9s ease forwards;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.06);
+}
+
+/* Stagger the two cards fading in */
+.card:nth-child(1) { animation-delay: 0.55s; }
+.card:nth-child(2) { animation-delay: 0.7s; }
+
+.card:hover {
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.14);
+}
+
+/* Extra shadow when the detail panel is open */
+.card.open {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 50px rgba(0,0,0,0.18);
+}
+
+/* ── CARD BANNER (colored top section) ── */
+.card-banner {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end; /* label text sits at the bottom of the banner */
+  padding: 24px;
+}
+
+/* Deep navy/purple for graduation */
+.card--grad .card-banner {
+  background: linear-gradient(160deg, #1a1a2e 0%, #2d1b5e 40%, #0f3460 100%);
+}
+
+/* Deep teal/ocean for Costa Rica */
+.card--cr .card-banner {
+  background: linear-gradient(160deg, #0d4f3c 0%, #1b6e4f 40%, #1b5e8e 100%);
+}
+
+/* ── Glowing circles behind the emoji ── */
+.deco-circle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.12; /* very subtle */
+}
+
+.card--grad .deco-circle:nth-child(1) {
+  width: 180px; height: 180px;
+  top: -60px; right: -40px;
+  background: radial-gradient(circle, #c9a84c, transparent); /* gold glow */
+}
+.card--grad .deco-circle:nth-child(2) {
+  width: 120px; height: 120px;
+  bottom: -30px; left: 20px;
+  background: radial-gradient(circle, #a78bfa, transparent); /* purple glow */
+}
+
+.card--cr .deco-circle:nth-child(1) {
+  width: 200px; height: 200px;
+  top: -70px; right: -50px;
+  background: radial-gradient(circle, #4ade80, transparent); /* green glow */
+}
+.card--cr .deco-circle:nth-child(2) {
+  width: 100px; height: 100px;
+  bottom: -20px; left: 30px;
+  background: radial-gradient(circle, #38bdf8, transparent); /* blue glow */
+}
+
+/* ── Floating emoji icons ── */
+.float-icons {
+  position: absolute;
+  inset: 0;
+  pointer-events: none; /* emoji don't block clicks */
+}
+
+.fi {
+  position: absolute;
+  font-size: 24px;
+  animation: float linear infinite; /* speed set inline per emoji */
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+}
+
+/* The up-and-down float animation */
+@keyframes float {
+  0%   { transform: translateY(0px) rotate(0deg); }
+  50%  { transform: translateY(-10px) rotate(4deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+/* Small pill label above the card title */
+.banner-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.75);
+  backdrop-filter: blur(8px);        /* frosted glass effect */
+  background: rgba(255,255,255,0.08);
+  margin-bottom: 8px;
+}
+
+.banner-title {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  font-weight: 400;
+  color: #fff;
+  line-height: 1.15;
+}
+
+.banner-title em {
+  font-style: italic;
+  opacity: 0.85;
+}
+
+/* ── WHITE CARD BODY ── */
+.card-body {
+  background: #fff;
+  padding: 24px;
+}
+
+/* Date row with the colored dot */
+.card-date-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  margin-bottom: 18px;
+}
+
+.date-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.card--grad .date-dot { background: var(--gold); }     /* gold for graduation */
+.card--cr  .date-dot { background: var(--green-lt); }  /* green for Costa Rica */
+
+/* ── COUNTDOWN GRID ── */
+.countdown {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* always 4 equal columns */
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.unit {
+  text-align: center;
+  padding: 12px 6px 10px;
+  border-radius: 12px;
+  background: var(--cream);
+  border: 1px solid var(--warm);
+}
+
+.unit-num {
+  display: block;
+  font-family: var(--font-display); /* serif numbers look elegant */
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+  transition: color 0.3s;
+  color: var(--ink);
+}
+
+.unit-label {
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+}
+
+/* ── TOGGLE BUTTON ("See the vibes") ── */
+.toggle-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: 1px solid var(--warm);
+  border-radius: 12px;
+  padding: 11px 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.toggle-btn:hover {
+  border-color: var(--gold);
+  color: var(--ink);
+}
+
+/* Arrow icon rotates 180° when card is open */
+.toggle-arrow {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.card.open .toggle-arrow { transform: rotate(180deg); }
+
+/* ── EXPANDABLE DETAIL PANEL ── */
+/* The max-height trick: animating from 0 to a large value creates a smooth slide */
+.card-detail {
+  background: #fff;
+  overflow: hidden;
+  max-height: 0;           /* collapsed by default */
+  transition: max-height 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.3s ease;
+  padding: 0 24px;         /* no top/bottom padding when collapsed */
+}
+
+/* When the card has the .open class, expand it */
+.card.open .card-detail {
+  max-height: 600px;       /* must be larger than actual content height */
+  padding: 0 24px 24px;
+}
+
+/* Thin line separating the detail section */
+.detail-divider {
+  height: 1px;
+  background: var(--warm);
+  margin-bottom: 20px;
+}
+
+/* Mini emoji scene banner inside the detail panel */
+.detail-scene {
+  border-radius: 14px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  gap: 12px;
+  margin-bottom: 18px;
+  letter-spacing: 6px;
+  overflow: hidden;
+}
+
+.card--grad .detail-scene {
+  background: linear-gradient(135deg, #1a1a2e, #2d1b5e, #0f3460);
+}
+.card--cr .detail-scene {
+  background: linear-gradient(135deg, #0d4f3c, #1b6e4f, #1b5e8e);
+}
+
+.detail-scene span {
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
+}
+
+/* "What we're celebrating" label */
+.vibes-title {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+/* Vibe chip tags */
+.vibes {
+  display: flex;
+  flex-wrap: wrap; /* chips wrap to next line */
+  gap: 7px;
+}
+
+.vibe {
+  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--warm);
+  color: var(--ink);
+  background: var(--cream);
+  font-weight: 400;
+}
+
+/* ── FOOTER ── */
+.site-footer {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 40px 20px 60px;
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+
+/* Pulsing heart */
+.footer-heart {
+  display: inline-block;
+  color: var(--gold);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.3); }
+}
+
+/* ── PAGE LOAD ANIMATION ── */
+/* Everything starts invisible (opacity:0) and slides up into place */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── RESPONSIVE (phones) ── */
+@media (max-width: 480px) {
+  .hero { padding: 60px 20px 40px; }
+  .unit-num { font-size: 1.6rem; }
+  .banner-title { font-size: 1.5rem; }
+}
